@@ -11,7 +11,6 @@ Color BACKGROUND_COLOR = Color{242, 238, 203, 255};
 Image paper = LoadImage("assets/paper.png");
 Image scissor = LoadImage("assets/scissor.png");
 Image stone = LoadImage("assets/stone.png");
-
 enum class GameObjectType
 {
     PAPER,
@@ -35,14 +34,12 @@ pair<int, int> genRandVal(int minX, int maxX, int minY, int maxY)
 }
 class GameObjects
 {
-private:
+public:
     pair<int, int> velocity; // vector
     pair<int, int> position; // point
     Texture2D texture;
     GameObjectType type;
     const int radius = 25;
-
-public:
     GameObjects(GameObjectType type)
     {
         this->velocity = genRandVal(-MAX_SPEED, MAX_SPEED, -MAX_SPEED, MAX_SPEED);
@@ -97,10 +94,42 @@ public:
     {
         DrawTexture(texture, position.first - this->radius, position.second - this->radius, WHITE);
     }
+    static void collision(GameObjects *a,GameObjects *b)
+    {
+        if (a->type == GameObjectType::PAPER && b->type == GameObjectType::STONE)
+        {
+            b->type = GameObjectType::PAPER;
+            b->texture = LoadTextureFromImage(paper);
+        }
+        else if (a->type == GameObjectType::PAPER && b->type == GameObjectType::SCISSOR)
+        {
+            a->type = GameObjectType::SCISSOR;
+            a->texture = LoadTextureFromImage(scissor);
+        }
+        else if (a->type == GameObjectType::STONE && b->type == GameObjectType::PAPER)
+        {
+            a->type = GameObjectType::PAPER;
+            a->texture = LoadTextureFromImage(paper);
+        }
+        else if (a->type == GameObjectType::STONE && b->type == GameObjectType::SCISSOR)
+        {
+            b->type = GameObjectType::STONE;
+            b->texture = LoadTextureFromImage(stone);
+        }
+        else if (a->type == GameObjectType::SCISSOR && b->type == GameObjectType::PAPER)
+        {
+            b->type = GameObjectType::SCISSOR;
+            b->texture = LoadTextureFromImage(scissor);
+        }
+        else if (a->type == GameObjectType::SCISSOR && b->type == GameObjectType::STONE)
+        {
+            a->type = GameObjectType::STONE;
+            a->texture = LoadTextureFromImage(stone);
+        }
+    }
 };
 int main()
 {
-
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Final Showdown");
     SetTargetFPS(60);
 
@@ -124,6 +153,16 @@ int main()
         for (int i = 0; i < 3 * PLAYER_COUNT; i++)
         {
             gameObjects[i]->update();
+        }
+        //check collision
+        for (int i = 0; i < 3 * PLAYER_COUNT; i++)
+        {
+            for (int j = i + 1; j < 3 * PLAYER_COUNT; j++)
+            {
+                bool isColliding = CheckCollisionCircles(Vector2{(float)gameObjects[i]->position.first, (float)gameObjects[i]->position.second}, gameObjects[i]->radius, Vector2{(float)gameObjects[j]->position.first, (float)gameObjects[j]->position.second}, gameObjects[j]->radius);
+                if (isColliding)
+                    GameObjects::collision(gameObjects[i], gameObjects[j]);
+            }
         }
         BeginDrawing();
         gameObjects[0]->update();
