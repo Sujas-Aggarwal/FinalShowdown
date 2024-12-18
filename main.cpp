@@ -5,12 +5,15 @@
 using namespace std;
 const int SCREEN_WIDTH = 960;
 const int SCREEN_HEIGHT = 960;
-const int PLAYER_COUNT = 10; // of every kind
+const int PLAYER_COUNT = 1; // of every kind
 const int MAX_SPEED = 3;     // this is for 60fps, i don't think there is any need nor time to add delta time in such a small project
 Color BACKGROUND_COLOR = Color{242, 238, 203, 255};
 Image paper = LoadImage("assets/paper.png");
 Image scissor = LoadImage("assets/scissor.png");
 Image stone = LoadImage("assets/stone.png");
+Sound paperWin = LoadSound("assets/paper.wav");
+Sound scissorWin = LoadSound("assets/scissor.wav");
+Sound stoneWin = LoadSound("assets/stone.wav");
 enum class GameObjectType
 {
     PAPER,
@@ -100,37 +103,45 @@ public:
         {
             b->type = GameObjectType::PAPER;
             b->texture = LoadTextureFromImage(paper);
+            PlaySound(paperWin);
         }
         else if (a->type == GameObjectType::PAPER && b->type == GameObjectType::SCISSOR)
         {
             a->type = GameObjectType::SCISSOR;
             a->texture = LoadTextureFromImage(scissor);
+            PlaySound(scissorWin);
         }
         else if (a->type == GameObjectType::STONE && b->type == GameObjectType::PAPER)
         {
             a->type = GameObjectType::PAPER;
             a->texture = LoadTextureFromImage(paper);
+            PlaySound(paperWin);
         }
         else if (a->type == GameObjectType::STONE && b->type == GameObjectType::SCISSOR)
         {
             b->type = GameObjectType::STONE;
             b->texture = LoadTextureFromImage(stone);
+            PlaySound(stoneWin);
         }
         else if (a->type == GameObjectType::SCISSOR && b->type == GameObjectType::PAPER)
         {
             b->type = GameObjectType::SCISSOR;
             b->texture = LoadTextureFromImage(scissor);
+            PlaySound(scissorWin);
         }
         else if (a->type == GameObjectType::SCISSOR && b->type == GameObjectType::STONE)
         {
             a->type = GameObjectType::STONE;
             a->texture = LoadTextureFromImage(stone);
+            PlaySound(stoneWin);
         }
     }
 };
 int main()
 {
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Final Showdown");
+    InitAudioDevice();
+    SetMasterVolume(1.0f);
     SetTargetFPS(60);
 
     vector<GameObjects *> gameObjects(3 * PLAYER_COUNT);
@@ -178,5 +189,9 @@ int main()
     UnloadImage(paper);
     UnloadImage(scissor);
     UnloadImage(stone);
+    UnloadSound(paperWin);
+    UnloadSound(scissorWin);
+    UnloadSound(stoneWin);
+    CloseAudioDevice();
     CloseWindow();
 }
